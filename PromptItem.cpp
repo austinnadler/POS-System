@@ -11,7 +11,7 @@ string PromptItem::toStringBack() const {
     ostringstream oss;
     oss << "pa," << warning << "," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
-}
+}//end toStringBack()
 
 
 
@@ -34,7 +34,7 @@ string PromptItem::toStringAdmin() const {
     ostringstream oss;
     oss << GMItem::toStringAdmin() << " Prompt: " << "\"" << getWarning() << "\"";
     return oss.str();
-}// and toStringAdmin()
+}// end toStringAdmin()
 
 
 

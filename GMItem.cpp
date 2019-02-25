@@ -13,9 +13,7 @@ string GMItem::toStringBack() const {
     ostringstream oss;
     oss << "gm," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
-}
-
-
+}//end toStringBack()
 
 bool GMItem::setItemName(const string& name)  {
     if(!(name.length() > MAX_NAME_LENGTH)) {
@@ -24,9 +22,7 @@ bool GMItem::setItemName(const string& name)  {
     } else {
         return false;
     }
-}
-
-
+}//end setItemName()
 
 bool GMItem::setItemPrice(const string& price){
         try {
@@ -36,9 +32,7 @@ bool GMItem::setItemPrice(const string& price){
             return false;
         }
     
-}
-
-
+}//end setItemPrice()
 
 bool GMItem::setNumOnHand(const string& n) {
     try {
@@ -48,9 +42,7 @@ bool GMItem::setNumOnHand(const string& n) {
          return false;
     }
     
-}
-
-
+}//end setNumOnHand()
 
 bool GMItem::decreaseCount(const string& n) {
     try {
@@ -59,9 +51,7 @@ bool GMItem::decreaseCount(const string& n) {
     } catch (invalid_argument e) {
         return false;
     }
-}
-
-
+}//end decreseCount()
 
 bool GMItem::increaseCount(const string& n) {
     try {
@@ -70,9 +60,7 @@ bool GMItem::increaseCount(const string& n) {
     } catch (invalid_argument e) {
         return false;
     }
-}
-
-
+}//end increaseCount()
 
 bool GMItem::setItemCode(const string& code) {
         try {
@@ -86,24 +74,19 @@ bool GMItem::setItemCode(const string& code) {
             return false;
         }
     
-}
-
-
+}//end setItemCode()
 
 string GMItem::toStringPOS() const {
     ostringstream oss;
-    oss << left << code << "\t" << setw(25) << setfill('.') << name << fixed << setprecision(2) << price;
+    oss << left << code << "\t" << setw(25) << name << fixed << setprecision(2) << price;
     return oss.str();
 }// end toStringPOS()
-
-
 
 string GMItem::toStringAdmin() const {
     ostringstream oss;
     oss << setw(10) << left << code << " | " << setw(20) << name  << right << "|" << setw(10) << fixed << setprecision(2) << price << " | " << left << setw(6) << numOnHand << " |";
     return oss.str();
 }//end toStringAdmin()
-
 
 string GMItem::toStringFile() const {
     ostringstream oss;
