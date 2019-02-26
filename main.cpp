@@ -15,27 +15,25 @@ using namespace std;
 using file_status_t = bool;
 using total_price_t = double;
 
-void printAdminInfo(vector<GMItem*> items);           // outputs to the screen the list of objects with all special information, for use in performAdminFunctions()
-
-const int MAX_CART_SIZE = 500; // I know from working at Wal-Mart that POS systems have built in caps around 400 or 500 so I figured I'd add one.
-const double TAX_RATE = 0.071;  // IL 7.1%
-void printItemsPOS(vector<GMItem*> items);          // To screen, displays only code, name, and price with periods for spacing, for use in checkout()
-void printPOSPriceSection(vector<GMItem*> items);   // print subtotal, taxes, and total, for use in checkout()
-void printPOSHeader();  
-total_price_t calculateTax(const double& subTotal);
-total_price_t calculateTotal(double& subTotal);
-
+const int MAX_CART_SIZE = 500;                           // I know from working at Wal-Mart that POS systems have built in caps around 400 or 500 so I figured I'd add one.
+const double TAX_RATE = 0.071;                           // IL 7.1%
+void printItemsPOS(vector<GMItem*>& items);              // To screen, displays only code, name, and price with periods for spacing, for use in checkout()
+void printPOSPriceSection(vector<GMItem*>& items);       // print subtotal, taxes, and total, for use in checkout()
+void printPOSHeader();                                   // print the formatted POS header       
+total_price_t calculateTax(const double& subTotal);      // Take the subTotal and calculate the tax that needs to be added based on the constant declared TAX_RATE. Program doesn't support multiple rates but could be implimented later
+total_price_t calculateTotal(double& subTotal);          // Take the subtotal and calculate the tax, add it to the subtotal and return it as a double
+total_price_t calculateSubtotal(vector<GMItem*>& items); // Take the array of items and go through it adding all of the prices up and return it as a double
 
 // Testing file reading and writing
 void testFileIOandPricing();
 
 // Utilities:
-void loadItemsFromFile(ifstream& ifs, vector<GMItem*> &items); 
+void loadItemsFromFile(ifstream& ifs, vector<GMItem*>& items); 
 file_status_t openFileIn(ifstream& ifs, const string& fileName);
 file_status_t openFileOut(ofstream& ofs, const string& fileName);
-void saveStoreCopy(ofstream& ofs, vector<GMItem*> items);
-
-void sortItemsByName(vector<GMItem*> items);
+void saveStoreCopy(ofstream& ofs, vector<GMItem*>& items);
+void sortItemsByName(vector<GMItem*>& items);
+bool isCodeTaken(vector<GMItem*>&, int& code);           // This is to make item codes unique. Uses binary search on the list that is sorted by code for max efficiency
 
 // Default file names to make testing quicker.
 string inFileName = "items.csv";
@@ -179,8 +177,7 @@ int main() {
     } while (codeString != "total" && numItemsInCart < MAX_CART_SIZE);
 }
 
-// Take the array of items and go through it adding all of the prices up and return it as a double
-total_price_t calculateSubtotal(vector<GMItem*> items){
+total_price_t calculateSubtotal(vector<GMItem*>& items){
     total_price_t total = 0;
     for(int i = 0; i < items.size(); i++) {
         total += items.at(i)->getItemPrice();
@@ -188,19 +185,16 @@ total_price_t calculateSubtotal(vector<GMItem*> items){
     return total;
 }// end calculateSubtotal()
 
-// Take the subtotal and calculate the tax, add it to the subtotal and return it as a double
 total_price_t calculateTotal(double& subtotal){
     return subtotal + calculateTax(subtotal);
 }// end calculateTotal()
 
-// Take the subTotal and calculate the tax that needs to be added based on the constant declared TAX_RATE. Program doesn't support multiple rates but could be implimented later
 total_price_t calculateTax(const double& subTotal) {
     total_price_t taxes = subTotal * TAX_RATE;
     return taxes;
 }// end calculateTax()
 
-// Take an ifs and an empty array and fill said array with items from a FORMATTED file
-void loadItemsFromFile(ifstream& ifs, vector<GMItem*> &items) {
+void loadItemsFromFile(ifstream& ifs, vector<GMItem*>& items) {
     string itemType;
     string name;
     string price;
@@ -250,39 +244,34 @@ void loadItemsFromFile(ifstream& ifs, vector<GMItem*> &items) {
     }
 }// end loadItemsFromFile()
 
-void saveStoreCopy(ofstream& ofs, vector<GMItem*> items) {
+void saveStoreCopy(ofstream& ofs, vector<GMItem*>& items) {
     for(int i = 0; i < items.size(); i++) {
         ofs << items.at(i)->toStringPOS() << endl;
     }
     ofs.close();
 }// end writeItems()
 
-// Take a provided array of items and print it to the screen using the toStringPOS() method
-void printItemsPOS(vector<GMItem*> items) {
+void printItemsPOS(vector<GMItem*>& items) {
     for(int i = 0; i < items.size(); i++) {
         cout  << i << "\t" << items.at(i)->toStringPOS() << endl;
     }
 }// end printItemsPOS()
 
-// use provided ifstream to open provided filename to read information from
 file_status_t openFileIn(ifstream& ifs, const string& fileName) {
     ifs.open(fileName);
     return ifs.is_open();
 }// end openFileIn()
 
-// use provided ofstream to open provided filename to write data to
 file_status_t openFileOut(ofstream& ofs, const string& fileName){
     ofs.open(fileName);
     return ofs.is_open();
 }// end openFileOut()
 
-// print the formatted POS header
 void printPOSHeader() {
     cout << left << "INDEX\t" << "CODE\t" << "NAME" <<  right << setw(26) << "PRICE" << endl;
 }
 
-// do the end of the transaction totaling and outputting all at once given the array of items and actual size size
-void printPOSPriceSection(vector<GMItem*> items) {
+void printPOSPriceSection(vector<GMItem*>& items) {
     total_price_t subTotal = calculateSubtotal(items);
     total_price_t taxes = calculateTax(subTotal);
     total_price_t totalPrice = calculateTotal(subTotal);
@@ -291,19 +280,4 @@ void printPOSPriceSection(vector<GMItem*> items) {
          << "Subtotal: $" << subTotal << endl
          << "Tax: $" << fixed << setprecision(2) << taxes << " (at " << TAX_RATE*100 << "%)" << endl
          << "Total: $" << fixed << setprecision(2) << totalPrice << endl;
-}
-
-// Insertion sort used 
-void sortItemsByName(vector<GMItem*> items) {
-    int i, j; 
-    GMItem * key;
-    for (i = 1; i < items.size(); i++) { 
-       key = items.at(i); 
-       j = i-1; 
-       while (j >= 0 && items.at(i)->getItemName() > key->getItemName()) { 
-           items.at(i+1) = items.at(j); 
-           j = j-1; 
-       } 
-       items.at(j+1) = key; 
-   } 
 }
