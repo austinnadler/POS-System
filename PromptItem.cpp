@@ -29,15 +29,6 @@ bool PromptItem::setWarning(const string& warning) {
 }// end setWarning()
 
 
-
-string PromptItem::toStringAdmin() const {
-    ostringstream oss;
-    oss << GMItem::toStringAdmin() << " Prompt: " << "\"" << getWarning() << "\"";
-    return oss.str();
-}// end toStringAdmin()
-
-
-
 string PromptItem::toStringFile() const {
     ostringstream oss;
     oss << GMItem::toStringFile() << "," << getWarning();

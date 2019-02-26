@@ -23,7 +23,7 @@ void printPOSHeader();                                   // print the formatted 
 total_price_t calculateTax(const double& subTotal);      // Take the subTotal and calculate the tax that needs to be added based on the constant declared TAX_RATE. Program doesn't support multiple rates but could be implimented later
 total_price_t calculateTotal(double& subTotal);          // Take the subtotal and calculate the tax, add it to the subtotal and return it as a double
 total_price_t calculateSubtotal(vector<GMItem*>& items); // Take the array of items and go through it adding all of the prices up and return it as a double
-
+void promptDeleteItem(string& index, vector<GMItem*>& items);
 // Testing file reading and writing
 void testFileIOandPricing();
 
@@ -41,7 +41,7 @@ string outFileName = "itemsOut.csv";
 
 int main() {
     ostringstream oss;
-    string codeString;
+    string input;
     int code = 0;
     int numItemsInCart = 0;
     double subTotal = 0;
@@ -70,9 +70,13 @@ int main() {
         }                        
 
         cout << "Enter product code (Type 'total' when done entering items): ";
-        getline(cin, codeString);
-        // FIX: add else if clause to do returns!
-        if(codeString == "total") {
+        getline(cin, input);
+
+        if(input == "remove") {
+            promptDeleteItem(input, cart);
+        }
+
+        if(input == "total") {
             cout << endl;
             try {
                     printPOSHeader();
@@ -84,10 +88,10 @@ int main() {
                         cart.at(i)->decreaseCount();
                     }
             } catch (exception e) {
-                cout << "Invalid input: " << codeString << endl;
+                cout << "Invalid input: " << input << endl;
             }
             cout << endl;
-        } else if (codeString == "undo") {
+        } else if (input == "undo") {
                 if(cart.size() < 1) {
                     cout << endl << "The list is already empty!" << endl;
                 } else {
@@ -98,7 +102,7 @@ int main() {
                 }
         } else {
             try {
-                code = stoi(codeString);
+                code = stoi(input);
                 for(int i = 0; i < inventory.size(); i++) {
                         
                         // FIX: This code does not work
@@ -174,7 +178,7 @@ int main() {
                 printPOSPriceSection(cart);
         cout << endl;
         
-    } while (codeString != "total" && numItemsInCart < MAX_CART_SIZE);
+    } while (input != "total" && numItemsInCart < MAX_CART_SIZE);
 }
 
 total_price_t calculateSubtotal(vector<GMItem*>& items){
@@ -281,3 +285,38 @@ void printPOSPriceSection(vector<GMItem*>& items) {
          << "Tax: $" << fixed << setprecision(2) << taxes << " (at " << TAX_RATE*100 << "%)" << endl
          << "Total: $" << fixed << setprecision(2) << totalPrice << endl;
 }
+
+void promptDeleteItem(string& index, vector<GMItem*>& items) {
+    string input;
+    int trythisindex;
+    int maxIndex = items.size() - 1;
+    do {
+        do {
+            try {
+                cout << "Enter the index of them item you want to remove: ";
+                getline(cin, input);
+                trythisindex = stoi(input);
+                if(trythisindex < 0 || trythisindex > maxIndex) {
+                    cerr << "Invalid index: " << input << endl;
+                }
+            }catch(invalid_argument e) {
+                cerr << "Invalid input: " << input << endl;
+            }
+        }while( trythisindex < 0 || trythisindex > maxIndex);
+
+        try {
+            index = stoi(input);
+            cout << "Delete item? (y/n): " << endl
+                 << "CODE       NAME                  PRICE" << endl
+                 << items.at(trythisindex)->toStringPOS() << endl;
+            getline(cin, input);
+            if(input == "y") {
+                items.erase(items.begin() + trythisindex);
+            } else if (input == "n") {
+                return;
+            }       
+        } catch (invalid_argument& e) {
+             cerr << "Invalid code entered: " << input;
+        }
+    } while (input != "y" && input != "n" && input != "exit");
+}//end promptDeleteItem()

@@ -33,7 +33,6 @@ public:
     virtual string getWarning() const   { return warning; }//end getExpirationDate()
     virtual bool setWarning(const string& warning); // any format, but must be short than 20 characters
 
-    virtual string toStringAdmin() const;
     virtual string toStringFile() const;
     virtual string toStringBack() const;
 

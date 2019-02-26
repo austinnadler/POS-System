@@ -27,14 +27,6 @@ bool AgeRestrictedItem::setMinAge(const string& minAge) {
 
 
 
-string AgeRestrictedItem::toStringAdmin() const {
-    ostringstream oss;
-    oss << GMItem::toStringAdmin() <<  " Minimum Age: " << right << getMinAge() << " years" ;
-    return oss.str();
-}
-
-
-
 string AgeRestrictedItem::toStringFile() const {
     ostringstream oss;
     oss << GMItem::toStringFile() << "," << getMinAge();
