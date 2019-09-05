@@ -59,7 +59,7 @@ int main() {
 
     do { 
         foundItem = false;
-        if(cart.size() == MAX_CART_SIZE) {
+        if(numItemsInCart >= MAX_CART_SIZE) {
             cout << "Maximum cart sized reached. Totaling the order..." << endl;
                     totalOrderPrintResults(cart);
             cout << endl;
@@ -300,7 +300,7 @@ void totalOrderPrintResults(List<GMItem*> cart) {
         } catch(invalid_argument& e) {
             isNum = false;
         }
-    } while(!isNum);
+    } while(!isNum || tender < total);
 
     cout << endl;
     printPOSHeader();
