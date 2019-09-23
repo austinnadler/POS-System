@@ -35,7 +35,6 @@ public:
     virtual int getMinAge() const  { return minAge; }//end getExpirationDate()
     
     virtual string toStringFile() const;
-    virtual string toStringBack() const; 
 };
 
 #endif

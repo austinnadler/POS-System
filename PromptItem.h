@@ -34,8 +34,6 @@ public:
     virtual bool setWarning(const string& warning); // any format, but must be short than 20 characters
 
     virtual string toStringFile() const;
-    virtual string toStringBack() const;
-
 };
 
 #endif

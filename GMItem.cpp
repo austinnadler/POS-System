@@ -9,12 +9,6 @@
 
 using namespace std;
 
-string GMItem::toStringBack() const {
-    ostringstream oss;
-    oss << "gm," << name << "," << price << "," << numOnHand << "," << code;
-    return oss.str();
-}//end toStringBack()
-
 bool GMItem::setItemName(const string& name)  {
     if(!(name.length() > MAX_NAME_LENGTH)) {
         this -> name = name;
@@ -44,22 +38,12 @@ bool GMItem::setNumOnHand(const string& n) {
     
 }//end setNumOnHand()
 
-bool GMItem::decreaseCount(const string& n) {
-    try {
-        this -> numOnHand -= stoi(n);
-        return true;
-    } catch (invalid_argument e) {
-        return false;
-    }
+void GMItem::decreaseCount(const int& n) {
+    this->numOnHand -= n;
 }//end decreseCount()
 
-bool GMItem::increaseCount(const string& n) {
-    try {
-        this -> numOnHand += stoi(n);
-        return true;
-    } catch (invalid_argument e) {
-        return false;
-    }
+void GMItem::increaseCount(const int& n) {
+    this->numOnHand -= n;
 }//end increaseCount()
 
 bool GMItem::setItemCode(const string& code) {
@@ -84,6 +68,6 @@ string GMItem::toStringPOS() const {
 
 string GMItem::toStringFile() const {
     ostringstream oss;
-    oss << code << "," <<  name << "," << fixed << setprecision(2) << price << "," << numOnHand;
+    oss << "gm," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
-}// end toStringFile()
+}//end toStringBack()

@@ -8,13 +8,11 @@
 
 using namespace std;
 
-string AgeRestrictedItem::toStringBack() const {
+string AgeRestrictedItem::toStringFile() const {
     ostringstream oss;
     oss << "pa," << minAge << "," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
 }
-
-
 
 bool AgeRestrictedItem::setMinAge(const string& minAge) {
     try {
@@ -24,11 +22,3 @@ bool AgeRestrictedItem::setMinAge(const string& minAge) {
         return false;
     }
 }
-
-
-
-string AgeRestrictedItem::toStringFile() const {
-    ostringstream oss;
-    oss << GMItem::toStringFile() << "," << getMinAge();
-    return oss.str();
-}// end toStringFile()

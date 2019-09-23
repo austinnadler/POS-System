@@ -7,7 +7,7 @@
 #include <iomanip>
 using namespace std;
 
-string PromptItem::toStringBack() const {
+string PromptItem::toStringFile() const {
     ostringstream oss;
     oss << "pa," << warning << "," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
@@ -27,10 +27,3 @@ bool PromptItem::setWarning(const string& warning) {
         return false;
     }
 }// end setWarning()
-
-
-string PromptItem::toStringFile() const {
-    ostringstream oss;
-    oss << GMItem::toStringFile() << "," << getWarning();
-    return oss.str();
-}// end toStringFile() 

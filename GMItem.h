@@ -27,8 +27,8 @@ class GMItem {
         virtual bool setNumOnHand (const string& n) final;
         virtual bool setItemCode  (const string& code) final;
 
-        virtual bool decreaseCount(const string& n = "1") final;
-        virtual bool increaseCount(const string& n = "1") final;
+        virtual void decreaseCount(const int& n = 1) final;
+        virtual void increaseCount(const int& n = 1) final;
         
         virtual string getItemName()   const final  { return name; }//end getItemName()
         virtual double getItemPrice()  const final  { return price; }//end getItemPrice()
@@ -39,7 +39,6 @@ class GMItem {
 
         virtual string toStringPOS()   const final;
         virtual string toStringFile()  const;
-        virtual string toStringBack()  const; // make a new string in the same format as the input file is read in
 };
 
 ostream& operator <<(ostream& os, const GMItem& o);

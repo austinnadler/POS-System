@@ -29,11 +29,11 @@ void testFileIOandPricing();
 // Utilities:
 void loadItemsFromFile(ifstream& ifs, List<GMItem*>& items); 
 file_status_t openFileIn(ifstream& ifs, const string& fileName);
-file_status_t openFileOut(ofstream& ofs, const string& fileName);
-void saveStoreCopy(ofstream& ofs, List<GMItem*>& items);
-void sortItemsByName(List<GMItem*>& items);
-bool isCodeTaken(List<GMItem*>&, int& code);           // This is to make item codes unique. Uses binary search on the list that is sorted by code for max efficiency
-void totalOrderPrintResults(List<GMItem*> cart);
+file_status_t openFileOut(ofstream& ofs, const string& fileName);      
+void totalOrderPrintResults(List<GMItem*>& cart, List<GMItem*>& inventory);
+void decrementItemCount(List<GMItem*>& items, int& index);
+void updateInventory(ofstream& ofs, List<GMItem*>& cart, List<GMItem*>& inventory);
+
 // Default file names to make testing quicker.
 string inFileName = "items.csv";
 string outFileName = "itemsOut.csv";
@@ -44,7 +44,6 @@ int main() {
     int code = 0;
     int numItemsInCart = 0;
     double subTotal = 0;
-    bool foundItem = false;
     List<GMItem*> inventory;
     List<GMItem*> cart;
     ifstream ifs;
@@ -58,10 +57,9 @@ int main() {
     loadItemsFromFile(ifs, inventory); 
 
     do { 
-        foundItem = false;
         if(numItemsInCart >= MAX_CART_SIZE) {
             cout << "Maximum cart sized reached. Totaling the order..." << endl;
-                    totalOrderPrintResults(cart);
+                    totalOrderPrintResults(cart, inventory);
             cout << endl;
             return 0;
         }                        
@@ -69,20 +67,8 @@ int main() {
         cout << "Enter product code (Type 'total' when done entering items): ";
         string index;
         getline(cin, input);
-        if(input == "remove") {
-            cout << "Enter item index: ";
-            getline(cin, index);
-            try {
-                cart.deleteAt(stoi(index));
-            } catch(invalid_argument& e) {
-                cout << "Invalid entry" << endl;
-            } catch(range_error& e) {
-                cout << e.what() << endl;
-            }
-        }
-
         if(input == "total") {
-            totalOrderPrintResults(cart);
+            totalOrderPrintResults(cart, inventory);
             return 0;
         } else if (input == "undo") {
                 if(cart.size() < 1) {
@@ -93,16 +79,19 @@ int main() {
                     printItemsPOS(cart);
                     printPOSPriceSection(cart);
                 }
+        } else if (input == "delete") {
+            cout << "Enter item index: ";
+            getline(cin, index);
+            if(stoi(index) < 0 or stoi(index) > numItemsInCart - 1) {
+                cout << "Invalid index." << endl;
+            } else {
+                cart.deleteAt(stoi(index));
+            }   
         } else {
             try {
                 code = stoi(input);
+                bool valid = false;
                 for(int i = 0; i < inventory.size(); i++) {
-                        
-                        // FIX: This code does not work
-                        if (foundItem == false && i == inventory.size()) { 
-                            cout << "No item with that code was found in the inventory file." << endl;
-                        } 
-
                     if(code == inventory.getAt(i)->getItemCode()) {
                         
                         // RTTI Run Time Type Idenification used to determine if the item is age restricted or not and take steps to verify age
@@ -112,7 +101,7 @@ int main() {
                         AgeRestrictedItem *ar = dynamic_cast<AgeRestrictedItem*>(gm);
                         PromptItem *pi = dynamic_cast<PromptItem*>(gm);
                         string input;
-                        bool valid = false;
+                        
 
                         if(ar != nullptr) {
                             do {
@@ -122,9 +111,8 @@ int main() {
                                 if(input == "y") {
                                     oss << inventory.getAt(i)->toStringPOS();
                                     subTotal += inventory.getAt(i)->getItemPrice();
-                                    numItemsInCart++;
                                     cart.pushBack(inventory.getAt(i));
-                                    foundItem = true;
+                                    numItemsInCart++;
                                     valid = true;
                                 } else if(input == "n") {
                                     cout << "Sale not allowed." << endl;
@@ -143,7 +131,6 @@ int main() {
                                     subTotal += inventory.getAt(i)->getItemPrice();
                                     numItemsInCart++;
                                     cart.pushBack(inventory.getAt(i));
-                                    foundItem = true;
                                     valid = true;
                                 } else if(input == "n") {
                                     cout << "Sale not allowed." << endl;
@@ -151,26 +138,25 @@ int main() {
                                 }
                             } while(!valid);      
                         }
-                        
-                        
                         if(ar == NULL && pi == NULL) {
                             cart.pushBack(inventory.getAt(i));
                         }
-
-                    }                     
+                    }                 
                 }
+                if(valid == false) {
+                    cout << "Item " << code << " not found." << endl;
+                }    
             } catch(exception e) {
                 cout << "Invalid Code Entered!" << endl;
             }
-        }
 
+        }
         cout << endl;
                 printPOSHeader();
                 printItemsPOS(cart);
             cout << endl;
                 printPOSPriceSection(cart);
         cout << endl;
-        
     } while (input != "total" && numItemsInCart < MAX_CART_SIZE);
 }
 
@@ -191,6 +177,61 @@ total_price_t calculateTax(const double& subTotal) {
     return taxes;
 }// end calculateTax()
 
+void printItemsPOS(List<GMItem*>& items) {
+    for(int i = 0; i < items.size(); i++) {
+        cout  << i << "\t" << items.getAt(i)->toStringPOS() << endl;
+    }
+}// end printItemsPOS()
+
+
+void printPOSHeader() {
+    cout << left << "INDEX\t" << "CODE\t" << "NAME" << right << setw(26) << "PRICE" << endl;
+}
+
+void printPOSPriceSection(List<GMItem*>& items) {
+    total_price_t subTotal = calculateSubtotal(items);
+    total_price_t taxes = calculateTax(subTotal);
+    total_price_t totalPrice = calculateTotal(subTotal);
+
+    cout << "Total number of items: " << items.size() << endl
+         << "Subtotal: $" << subTotal << endl
+         << "Tax: $" << fixed << setprecision(2) << taxes << " (at " << TAX_RATE*100 << "%)" << endl
+         << "Total: $" << fixed << setprecision(2) << totalPrice << endl;
+}
+
+void totalOrderPrintResults(List<GMItem*>& cart, List<GMItem*>& inventory) {
+    string input;
+    bool isNum = false;
+    double total = calculateSubtotal(cart) + calculateTax(calculateSubtotal(cart));
+    double tender = 0;
+    double change = 0;
+    ofstream ofs;
+
+    // TODO: allow for smaller payments (e.g. $5 from one person, $5 from another)
+
+    do {
+        cout << "Enter the tender amount: ";
+        getline(cin, input);
+        try {
+            tender += stod(input);
+            change = tender - total;
+            isNum = true;
+        } catch(invalid_argument& e) {
+            isNum = false;
+        }
+    } while(!isNum || tender < total);
+    openFileOut(ofs, "items.csv");
+    updateInventory(ofs, cart, inventory);
+
+    cout << endl;
+    printPOSHeader();
+    printItemsPOS(cart);
+    printPOSPriceSection(cart);
+    cout << "Tender amount: $" << fixed << setprecision(2) << tender << endl;
+    cout << "Change due: $" << fixed << setprecision(2) << change << endl;
+}
+
+/*-------- File IO --------*/
 void loadItemsFromFile(ifstream& ifs, List<GMItem*>& items) {
     string itemType;
     string name;
@@ -241,18 +282,15 @@ void loadItemsFromFile(ifstream& ifs, List<GMItem*>& items) {
     }
 }// end loadItemsFromFile()
 
-void saveStoreCopy(ofstream& ofs, List<GMItem*>& items) {
-    for(int i = 0; i < items.size(); i++) {
-        ofs << items.getAt(i)->toStringPOS() << endl;
+void updateInventory(ofstream& ofs, List<GMItem*>& cart, List<GMItem*>& inventory) {
+    for(int i = 0; i < cart.size(); i++) {
+        cart.getAt(i)->decreaseCount();
+    }
+    for(int i = 0; i < inventory.size(); i++) {
+        ofs << inventory.getAt(i)->toStringFile() << endl;
     }
     ofs.close();
-}// end writeItems()
-
-void printItemsPOS(List<GMItem*>& items) {
-    for(int i = 0; i < items.size(); i++) {
-        cout  << i << "\t" << items.getAt(i)->toStringPOS() << endl;
-    }
-}// end printItemsPOS()
+}// end updateInventory
 
 file_status_t openFileIn(ifstream& ifs, const string& fileName) {
     ifs.open(fileName);
@@ -263,49 +301,3 @@ file_status_t openFileOut(ofstream& ofs, const string& fileName){
     ofs.open(fileName);
     return ofs.is_open();
 }// end openFileOut()
-
-void printPOSHeader() {
-    cout << left << "INDEX\t" << "CODE\t" << "NAME" <<  right << setw(26) << "PRICE" << endl;
-}
-
-void printPOSPriceSection(List<GMItem*>& items) {
-    total_price_t subTotal = calculateSubtotal(items);
-    total_price_t taxes = calculateTax(subTotal);
-    total_price_t totalPrice = calculateTotal(subTotal);
-
-    cout << "Total number of items: " << items.size() << endl
-         << "Subtotal: $" << subTotal << endl
-         << "Tax: $" << fixed << setprecision(2) << taxes << " (at " << TAX_RATE*100 << "%)" << endl
-         << "Total: $" << fixed << setprecision(2) << totalPrice << endl;
-}
-
-void totalOrderPrintResults(List<GMItem*> cart) {
-    string input;
-    bool isNum = false;
-    double total = calculateSubtotal(cart) + calculateTax(calculateSubtotal(cart));
-    double tender;
-    double change;
-    // Change the on hand quantity.
-    for(int i = 0; i < cart.size(); i++) {
-        cart.getAt(i)->decreaseCount();
-    }
-
-    do {
-        cout << "Enter the tender amount: ";
-        getline(cin, input);
-        try {
-            tender = stod(input);
-            change = tender - total;
-            isNum = true;
-        } catch(invalid_argument& e) {
-            isNum = false;
-        }
-    } while(!isNum || tender < total);
-
-    cout << endl;
-    printPOSHeader();
-    printItemsPOS(cart);
-    printPOSPriceSection(cart);
-    cout << "Tender amount: $" << fixed << setprecision(2) << tender << endl;
-    cout << "Change due: $" << fixed << setprecision(2) << change << endl;
-}
