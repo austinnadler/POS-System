@@ -10,7 +10,7 @@ using namespace std;
 
 string AgeRestrictedItem::toStringFile() const {
     ostringstream oss;
-    oss << "pa," << minAge << "," << name << "," << price << "," << numOnHand << "," << code;
+    oss << "ar," << minAge << "," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
 }
 

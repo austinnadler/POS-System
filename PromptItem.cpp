@@ -9,7 +9,7 @@ using namespace std;
 
 string PromptItem::toStringFile() const {
     ostringstream oss;
-    oss << "pa," << warning << "," << name << "," << price << "," << numOnHand << "," << code;
+    oss << "warn," << warning << "," << name << "," << price << "," << numOnHand << "," << code;
     return oss.str();
 }//end toStringBack()
 
