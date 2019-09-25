@@ -2,6 +2,7 @@
 A point of sale system based on InventorySystem and Dynamic Array List to maintain a perpetual inventory system while handling transactions.
 
 TODO:   (1) allow for smaller payments (e.g. $5 from one person, $5 from another)
+
         (2)add qty option to add multiple of an item without entering the code multiple times
 
 
