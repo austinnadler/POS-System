@@ -36,7 +36,6 @@ void updateInventory(ofstream& ofs, List<GMItem*>& cart, List<GMItem*>& inventor
 
 // Default file names to make testing quicker.
 string inFileName = "items.csv";
-string outFileName = "itemsOut.csv";
 
 int main() {
     ostringstream oss;
@@ -63,7 +62,6 @@ int main() {
             cout << endl;
             return 0;
         }                        
-
         cout << "Enter product code (Type 'total' when done entering items): ";
         string index;
         getline(cin, input);
@@ -149,7 +147,6 @@ int main() {
             } catch(exception e) {
                 cout << "Invalid Code Entered!" << endl;
             }
-
         }
         cout << endl;
                 printPOSHeader();
@@ -207,8 +204,6 @@ void totalOrderPrintResults(List<GMItem*>& cart, List<GMItem*>& inventory) {
     double change = 0;
     ofstream ofs;
 
-    // TODO: allow for smaller payments (e.g. $5 from one person, $5 from another)
-
     do {
         cout << "Enter the tender amount: ";
         getline(cin, input);
@@ -220,7 +215,7 @@ void totalOrderPrintResults(List<GMItem*>& cart, List<GMItem*>& inventory) {
             isNum = false;
         }
     } while(!isNum || tender < total);
-    openFileOut(ofs, "items.csv");
+    openFileOut(ofs, inFileName);
     updateInventory(ofs, cart, inventory);
 
     cout << endl;
