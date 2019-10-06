@@ -88,7 +88,19 @@ int main() {
         } else {
             try {
                 code = stoi(input);
-                bool valid = false;
+                bool validCode = false;
+                bool validAge = false;
+                bool validAcknowledge = false;
+                for(int j = 0; j < inventory.size(); j++) {
+                    if(inventory.getAt(j)->getItemCode() == code) {
+                        validCode = true;
+                    }
+                }
+
+                if(!validCode) {
+                    cout << "Item " << input << " not found" << endl;
+                }
+
                 for(int i = 0; i < inventory.size(); i++) {
                     if(code == inventory.getAt(i)->getItemCode()) {
                         
@@ -99,7 +111,8 @@ int main() {
                         AgeRestrictedItem *ar = dynamic_cast<AgeRestrictedItem*>(gm);
                         PromptItem *pi = dynamic_cast<PromptItem*>(gm);
                         string input;
-                        
+
+
 
                         if(ar != nullptr) {
                             do {
@@ -111,12 +124,12 @@ int main() {
                                     subTotal += inventory.getAt(i)->getItemPrice();
                                     cart.pushBack(inventory.getAt(i));
                                     numItemsInCart++;
-                                    valid = true;
+                                    validAge = true;
                                 } else if(input == "n") {
                                     cout << "Sale not allowed." << endl;
-                                    valid = true;
+                                    validAge = true;
                                 }
-                            } while(!valid);
+                            } while(!validAge);
                         }
                         
                         if(pi != nullptr) {
@@ -129,23 +142,20 @@ int main() {
                                     subTotal += inventory.getAt(i)->getItemPrice();
                                     numItemsInCart++;
                                     cart.pushBack(inventory.getAt(i));
-                                    valid = true;
+                                    validAcknowledge = true;
                                 } else if(input == "n") {
                                     cout << "Sale not allowed." << endl;
-                                    valid = true;
+                                    validAcknowledge = true;
                                 }
-                            } while(!valid);      
+                            } while(!validAcknowledge);      
                         }
                         if(ar == NULL && pi == NULL) {
                             cart.pushBack(inventory.getAt(i));
                         }
                     }                 
-                }
-                if(valid == false) {
-                    cout << "Item " << code << " not found." << endl;
-                }    
+                } 
             } catch(exception e) {
-                cout << "Invalid Code Entered!" << endl;
+                cout << "Invalid entry - Not a Number!" << endl;
             }
         }
         cout << endl;
